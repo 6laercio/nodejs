@@ -17,10 +17,10 @@ const server = http.createServer((req, res) => {
       title: "Learn Node.js",
       completed: false,
     });
-    return res.end("Task created");
+    return res.writeHead(201).end("Task created");
   }
 
-  return res.end("Not found");
+  return res.writeHead(404).end("Not found");
 });
 
 server.listen(3000, () => {
