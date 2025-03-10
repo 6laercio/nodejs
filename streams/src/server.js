@@ -1,4 +1,4 @@
-import { Readable, Writable } from "node:stream";
+import { Readable, Writable, Transform } from "node:stream";
 
 class CounterStream extends Readable {
   count = 1;
@@ -17,6 +17,14 @@ class CounterStream extends Readable {
   }
 }
 
+class DoubleNumberStream extends Transform {
+  _transform(chunk, encoding, callback) {
+    const num = Number(chunk.toString());
+    const doubled = num * 2;
+    callback(null, String(doubled));
+  }
+}
+
 class EvenOddCheckerStream extends Writable {
   _write(chunk, encoding, callback) {
     const num = Number(chunk.toString());
@@ -28,8 +36,11 @@ class EvenOddCheckerStream extends Writable {
 
 const counterStream = new CounterStream();
 const evenOddChecker = new EvenOddCheckerStream();
+const doubleNumber = new DoubleNumberStream();
 
-counterStream.pipe(evenOddChecker);
+counterStream
+  .pipe(doubleNumber) // Dobra o número
+  .pipe(evenOddChecker); // Verifica se é par ou ímpar
 
 /* function createArrayStream() {
   const data = [
