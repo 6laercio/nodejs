@@ -1,13 +1,24 @@
 import http from "node:http";
 
+const tasks = [];
+
 const server = http.createServer((req, res) => {
   const { method, url } = req;
 
-  if (method === "GET" && url === "/tasks")
-    return res.end("Route to get tasks");
+  if (method === "GET" && url === "/tasks") {
+    return res
+      .setHeader("Content-Type", "application/json")
+      .end(JSON.stringify(tasks));
+  }
 
-  if (method === "POST" && url === "/tasks")
-    return res.end("Route to create task");
+  if (method === "POST" && url === "/tasks") {
+    tasks.push({
+      id: 1,
+      title: "Learn Node.js",
+      completed: false,
+    });
+    return res.end("Task created");
+  }
 
   return res.end("Not found");
 });
