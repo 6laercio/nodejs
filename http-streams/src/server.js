@@ -10,9 +10,17 @@ class ProcessorStream extends Transform {
 }
 
 // Criar e iniciar servidor
-const server = http.createServer((req, res) => {
-  console.log("Servidor recebendo dados...");
-  req.pipe(new ProcessorStream()).pipe(res);
+const server = http.createServer(async (req, res) => {
+  const buffers = [];
+
+  for await (const chunk of req) buffers.push(chunk);
+
+  const content = Buffer.concat(buffers).toString();
+
+  return res.end(content);
+
+  //   console.log("Servidor recebendo dados...");
+  //   req.pipe(new ProcessorStream()).pipe(res);
 });
 
 server.listen(3001, () => {
@@ -47,5 +55,7 @@ server.listen(3001, () => {
     method: "POST",
     body: fileStream,
     duplex: "half",
-  });
+  })
+    .then((response) => response.text())
+    .then((data) => console.log(data));
 });
