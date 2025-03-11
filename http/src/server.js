@@ -1,42 +1,31 @@
 import http from "node:http";
+import { json } from "./middlewares/json.js";
 
 const tasks = [];
 
 const server = http.createServer(async (req, res) => {
   const { method, url } = req;
 
+  await json(req, res);
+
   if (method === "GET" && url === "/tasks") {
-    return res
-      .setHeader("Content-Type", "application/json")
-      .end(JSON.stringify(tasks));
+    return res.json(tasks);
   }
 
   if (method === "POST" && url === "/tasks") {
-    const buffers = [];
-
-    for await (const chunk of req) {
-      buffers.push(chunk);
+    if (!req.body || !req.body.title) {
+      return res.writeHead(400).end("Title is required");
     }
 
-    try {
-      const body = JSON.parse(Buffer.concat(buffers).toString());
+    const task = {
+      id: tasks.length + 1,
+      title: req.body.title,
+      completed: false,
+    };
 
-      if (!body.title) {
-        return res.writeHead(400).end("Title is required");
-      }
+    tasks.push(task);
 
-      const task = {
-        id: tasks.length + 1,
-        title: body.title,
-        completed: false,
-      };
-
-      tasks.push(task);
-
-      return res.writeHead(201).end("Task created");
-    } catch (error) {
-      return res.writeHead(400).end("Invalid JSON");
-    }
+    return res.writeHead(201).end("Task created");
   }
 
   return res.writeHead(404).end("Not found");
