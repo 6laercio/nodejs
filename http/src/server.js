@@ -2,7 +2,7 @@ import http from "node:http";
 
 const tasks = [];
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const { method, url } = req;
 
   if (method === "GET" && url === "/tasks") {
@@ -12,12 +12,31 @@ const server = http.createServer((req, res) => {
   }
 
   if (method === "POST" && url === "/tasks") {
-    tasks.push({
-      id: 1,
-      title: "Learn Node.js",
-      completed: false,
-    });
-    return res.writeHead(201).end("Task created");
+    const buffers = [];
+
+    for await (const chunk of req) {
+      buffers.push(chunk);
+    }
+
+    try {
+      const body = JSON.parse(Buffer.concat(buffers).toString());
+
+      if (!body.title) {
+        return res.writeHead(400).end("Title is required");
+      }
+
+      const task = {
+        id: tasks.length + 1,
+        title: body.title,
+        completed: false,
+      };
+
+      tasks.push(task);
+
+      return res.writeHead(201).end("Task created");
+    } catch (error) {
+      return res.writeHead(400).end("Invalid JSON");
+    }
   }
 
   return res.writeHead(404).end("Not found");
