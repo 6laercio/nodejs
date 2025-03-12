@@ -36,11 +36,6 @@ class Database {
 
     return data;
   }
-
-  generateId(table) {
-    const items = this.select(table);
-    return items.length + 1;
-  }
 }
 
 export default new Database();
