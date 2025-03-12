@@ -1,7 +1,6 @@
 import http from "node:http";
 import { json } from "./middlewares/json.js";
-
-const tasks = [];
+import db from "./database.js";
 
 const server = http.createServer(async (req, res) => {
   const { method, url } = req;
@@ -9,6 +8,7 @@ const server = http.createServer(async (req, res) => {
   await json(req, res);
 
   if (method === "GET" && url === "/tasks") {
+    const tasks = db.select("tasks");
     return res.json(tasks);
   }
 
@@ -18,12 +18,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     const task = {
-      id: tasks.length + 1,
+      id: db.generateId("tasks"),
       title: req.body.title,
       completed: false,
     };
 
-    tasks.push(task);
+    db.insert("tasks", task);
 
     return res.writeHead(201).end("Task created");
   }
